@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket chat</title>
+</head>
+<body>
+<div>
+    <span style="opacity: 1" id="join-view">
+        Chat room id:
+        <input value="room1" id="chat-room-id"/>
+        <button onclick="joinRoom()">Join</button>
+    </span>
+
+    <div style="opacity: 0" id="chat-view">
+        <div>
+            <b>Messages</b>
+            <ul id="messages">
+
+            </ul>
+        </div>
+
+        <input id="message-input"/>
+        <button onclick="sendMessage()">Send message</button>
+    </div>
+</div>
+<script>
+    var ws;
+    function joinRoom() {
+        let chatRoomId = document.querySelector("#chat-room-id").value;
+        ws = new WebSocket('ws://localhost:8080/chat?roomId=' + chatRoomId);
+
+        ws.onmessage = function(event) {
+            let messagesList = document.querySelector("#messages");
+
+            let message = event.data;
+
+            let messageElement = document.createElement("li");
+            messageElement.innerText = message;
+            messagesList.append(messageElement);
+        };
+
+        ws.onopen = function() {
+            setStateJoined();
+        }
+
+        console.log("Joined room", chatRoomId);
+
+    }
+
+    function setStateJoined() {
+        document.querySelector("#chat-view").style.opacity = 1;
+        document.querySelector("#join-view").style.opacity = 0;
+    }
+
+    function sendMessage() {
+        let messageInput = document.querySelector("#message-input");
+
+        ws.send(messageInput.value);
+        console.log("Message sent!");
+
+        messageInput.value = "";
+    }
+</script>
+</body>
+</html>
